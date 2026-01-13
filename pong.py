@@ -34,6 +34,7 @@ paddle1_vel = 0
 paddle2_vel = 0
 l_score = 0
 r_score = 0
+max_score = 10
 
 #canvas declaration
 window = pygame.display.set_mode((WIDTH, HEIGHT), 0, 32)
@@ -170,6 +171,9 @@ while True:
         elif event.type == KEYUP:
             keyup(event)
         elif event.type == QUIT:
+            pygame.quit()
+            sys.exit()
+        elif l_score == max_score OR r_score == max_score:
             pygame.quit()
             sys.exit()
             
