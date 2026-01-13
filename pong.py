@@ -146,6 +146,9 @@ def keydown(event):
         paddle1_vel = -8
     elif event.key == K_s:
         paddle1_vel = 8
+    # The selected key is "esc" - To pause the game.
+    elif event.key == K_ESCAPE:
+        ball_vel = [0, 0]
 
 #keyup handler
 def keyup(event):
