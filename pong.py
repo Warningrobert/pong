@@ -149,6 +149,9 @@ def keydown(event):
     # The selected key is "esc" - To pause the game.
     elif event.key == K_ESCAPE:
         ball_vel = [0, 0]
+    # Use the "r" to restart the game
+    elif event.key == K_r:
+        init()
 
 #keyup handler
 def keyup(event):
@@ -158,7 +161,7 @@ def keyup(event):
         paddle1_vel = 0
     elif event.key in (K_UP, K_DOWN):
         paddle2_vel = 0
-
+ 
 init()
 
 
