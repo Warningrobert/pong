@@ -179,7 +179,7 @@ while True:
         elif event.type == QUIT:
             pygame.quit()
             sys.exit()
-        elif l_score == max_score OR r_score == max_score:
+        elif l_score == max_score or r_score == max_score:
             pygame.quit()
             sys.exit()
             
