@@ -37,6 +37,9 @@ r_score = 0
 max_score = 10
 pause = False
 saved_ball_vel = [0,0]
+MENU = "menu"
+GAME = "game"
+
 
 #canvas declaration
 window = pygame.display.set_mode((WIDTH, HEIGHT), 0, 32)
@@ -67,6 +70,31 @@ def init():
         ball_init(True)
     else:
         ball_init(False)
+
+
+def menu_draw(canvas):
+    canvas.fill(BLACK)
+    pygame.draw.line(canvas, WHITE, [WIDTH // 2 - 50, HEIGHT // 2 - 30], [WIDTH // 2 - 50, HEIGHT // 2], 1) #right line start
+    pygame.draw.line(canvas, WHITE, [WIDTH // 2 - 50, HEIGHT // 2 - 30], [WIDTH // 2 + 50, HEIGHT // 2 - 30], 1) #top line start
+    pygame.draw.line(canvas, WHITE, [WIDTH // 2 + 50, HEIGHT // 2 - 30], [WIDTH // 2 + 50, HEIGHT // 2], 1) #left line start
+    pygame.draw.line(canvas, WHITE, [WIDTH // 2 - 50, HEIGHT // 2], [WIDTH // 2 + 50, HEIGHT // 2], 1) #botton line start
+
+
+
+    myfont = pygame.font.SysFont("Comic Sans MS", 20)
+    label_start = myfont.render("Start = SPACE", 1, (255,255,0))
+    canvas.blit(label_start, (255, 180))
+
+    label_max = myfont.render("MAX "+str(max_score), 1, (255,255,0))
+    canvas.blit(label_max, (280,220))
+
+    label_help = myfont.render("Press LEFT for less and RIGHT for more", 1, (255,255,0))
+    canvas.blit(label_help, (180, 240))
+
+
+    
+    pygame.display.update()
+    fps.tick(60)
 
 
 #draw function of canvas
@@ -150,7 +178,7 @@ def draw(canvas):
     
 #keydown handler
 def keydown(event):
-    global paddle1_vel, paddle2_vel, pause, saved_ball_vel, ball_vel
+    global paddle1_vel, paddle2_vel, pause, saved_ball_vel, ball_vel, state, max_score
     
     if event.key == K_UP:
         paddle2_vel = -8
@@ -173,7 +201,12 @@ def keydown(event):
             ball_vel = [0, 0]
             paddle1_vel = 0
             paddle2_vel = 0
-
+    elif event.key == K_SPACE:
+        state = GAME
+    elif event.key == K_LEFT:
+        max_score -= 1
+    elif event.key == K_RIGHT:
+        max_score += 1
     # Use the "r" to restart the game
     elif event.key == K_r:
         init()
@@ -189,11 +222,11 @@ def keyup(event):
  
 init()
 
+state = MENU    
 
 #game loop
 while True:
 
-    draw(window)
 
     for event in pygame.event.get():
 
@@ -207,6 +240,11 @@ while True:
         elif l_score == max_score or r_score == max_score:
             pygame.quit()
             sys.exit()
+
+    if state == MENU:
+        menu_draw(window)
+    elif state == GAME:
+        draw(window)
             
     pygame.display.update()
     fps.tick(60)
