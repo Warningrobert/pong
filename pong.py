@@ -35,6 +35,8 @@ paddle2_vel = 0
 l_score = 0
 r_score = 0
 max_score = 10
+pause = False
+saved_ball_vel = [0,0]
 
 #canvas declaration
 window = pygame.display.set_mode((WIDTH, HEIGHT), 0, 32)
@@ -77,24 +79,25 @@ def draw(canvas):
     pygame.draw.line(canvas, WHITE, [WIDTH - PAD_WIDTH, 0],[WIDTH - PAD_WIDTH, HEIGHT], 1)
     pygame.draw.circle(canvas, WHITE, [WIDTH//2, HEIGHT//2], 70, 1)
 
-    # update paddle's vertical position, keep paddle on the screen
-    if paddle1_pos[1] > HALF_PAD_HEIGHT and paddle1_pos[1] < HEIGHT - HALF_PAD_HEIGHT:
-        paddle1_pos[1] += paddle1_vel
-    elif paddle1_pos[1] == HALF_PAD_HEIGHT and paddle1_vel > 0:
-        paddle1_pos[1] += paddle1_vel
-    elif paddle1_pos[1] == HEIGHT - HALF_PAD_HEIGHT and paddle1_vel < 0:
-        paddle1_pos[1] += paddle1_vel
-    
-    if paddle2_pos[1] > HALF_PAD_HEIGHT and paddle2_pos[1] < HEIGHT - HALF_PAD_HEIGHT:
-        paddle2_pos[1] += paddle2_vel
-    elif paddle2_pos[1] == HALF_PAD_HEIGHT and paddle2_vel > 0:
-        paddle2_pos[1] += paddle2_vel
-    elif paddle2_pos[1] == HEIGHT - HALF_PAD_HEIGHT and paddle2_vel < 0:
-        paddle2_pos[1] += paddle2_vel
+    if pause == False:
+        # update paddle's vertical position, keep paddle on the screen
+        if paddle1_pos[1] > HALF_PAD_HEIGHT and paddle1_pos[1] < HEIGHT - HALF_PAD_HEIGHT:
+            paddle1_pos[1] += paddle1_vel
+        elif paddle1_pos[1] == HALF_PAD_HEIGHT and paddle1_vel > 0:
+            paddle1_pos[1] += paddle1_vel
+        elif paddle1_pos[1] == HEIGHT - HALF_PAD_HEIGHT and paddle1_vel < 0:
+            paddle1_pos[1] += paddle1_vel
 
-    #update ball
-    ball_pos[0] += int(ball_vel[0])
-    ball_pos[1] += int(ball_vel[1])
+        if paddle2_pos[1] > HALF_PAD_HEIGHT and paddle2_pos[1] < HEIGHT - HALF_PAD_HEIGHT:
+            paddle2_pos[1] += paddle2_vel
+        elif paddle2_pos[1] == HALF_PAD_HEIGHT and paddle2_vel > 0:
+            paddle2_pos[1] += paddle2_vel
+        elif paddle2_pos[1] == HEIGHT - HALF_PAD_HEIGHT and paddle2_vel < 0:
+            paddle2_pos[1] += paddle2_vel
+
+        #update ball
+        ball_pos[0] += int(ball_vel[0])
+        ball_pos[1] += int(ball_vel[1])
 
     #draw paddles and ball
     pygame.draw.circle(canvas, RED, ball_pos, 20, 0)
@@ -131,12 +134,23 @@ def draw(canvas):
 
     myfont2 = pygame.font.SysFont("Comic Sans MS", 20)
     label2 = myfont2.render("Score "+str(r_score), 1, (255,255,0))
-    canvas.blit(label2, (470, 20))  
+    canvas.blit(label2, (470, 20))
+
+    # Display the pause text, when the game is paused.
+    if pause:
+        pause_font = pygame.font.SysFont("Comic Sans MS", 100)
+        pause_text = pause_font.render("PAUSE", 1, (255, 255, 0))
+        ## If someone needs additional information, the code bellow was taken from here:https://www.geeksforgeeks.org/python/python-display-text-to-pygame-window/
+        # create a rectangular object for the text surface object
+        textRect = pause_text.get_rect()
+        # set the center of the rectangular object.
+        textRect.center = (WIDTH // 2, HEIGHT // 2)
+        canvas.blit(pause_text,textRect)
     
     
 #keydown handler
 def keydown(event):
-    global paddle1_vel, paddle2_vel
+    global paddle1_vel, paddle2_vel, pause, saved_ball_vel, ball_vel
     
     if event.key == K_UP:
         paddle2_vel = -8
@@ -148,7 +162,18 @@ def keydown(event):
         paddle1_vel = 8
     # The selected key is "esc" - To pause the game.
     elif event.key == K_ESCAPE:
-        ball_vel = [0, 0]
+        #If the game is already paused.
+        if pause:
+            pause = False
+            ball_vel = list(saved_ball_vel)
+        # If the game is unpaused.
+        else:
+            pause = True
+            saved_ball_vel = list(ball_vel)
+            ball_vel = [0, 0]
+            paddle1_vel = 0
+            paddle2_vel = 0
+
 
 #keyup handler
 def keyup(event):
@@ -176,7 +201,7 @@ while True:
         elif event.type == QUIT:
             pygame.quit()
             sys.exit()
-        elif l_score == max_score OR r_score == max_score:
+        elif l_score == max_score or r_score == max_score:
             pygame.quit()
             sys.exit()
             
