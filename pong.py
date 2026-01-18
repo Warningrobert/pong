@@ -168,12 +168,19 @@ def draw(canvas):
     if pause:
         pause_font = pygame.font.SysFont("Comic Sans MS", 100)
         pause_text = pause_font.render("PAUSE", 1, (255, 255, 0))
+
+        restart_font = pygame.font.SysFont("Comic Sans MS", 50)
+        restart_text = restart_font.render("Press 'R' to restart", 1, (255, 255, 0))
         ## If someone needs additional information, the code bellow was taken from here:https://www.geeksforgeeks.org/python/python-display-text-to-pygame-window/
         # create a rectangular object for the text surface object
-        textRect = pause_text.get_rect()
+        pause_rect = pause_text.get_rect()
+        restart_rect = restart_text.get_rect()
         # set the center of the rectangular object.
-        textRect.center = (WIDTH // 2, HEIGHT // 2)
-        canvas.blit(pause_text,textRect)
+        pause_rect.center = (WIDTH // 2, HEIGHT // 2 - 50)
+        restart_rect.center = (WIDTH // 2, HEIGHT // 2 + 50)
+
+        canvas.blit(pause_text,pause_rect)
+        canvas.blit(restart_text, restart_rect)
     
     
 #keydown handler
