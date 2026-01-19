@@ -35,6 +35,11 @@ paddle2_vel = 0
 l_score = 0
 r_score = 0
 max_score = 10
+pause = False
+saved_ball_vel = [0,0]
+MENU = "menu"
+GAME = "game"
+
 
 #canvas declaration
 window = pygame.display.set_mode((WIDTH, HEIGHT), 0, 32)
@@ -67,6 +72,31 @@ def init():
         ball_init(False)
 
 
+def menu_draw(canvas):
+    canvas.fill(BLACK)
+    pygame.draw.line(canvas, WHITE, [WIDTH // 2 - 50, HEIGHT // 2 - 30], [WIDTH // 2 - 50, HEIGHT // 2], 1) #right line start
+    pygame.draw.line(canvas, WHITE, [WIDTH // 2 - 50, HEIGHT // 2 - 30], [WIDTH // 2 + 50, HEIGHT // 2 - 30], 1) #top line start
+    pygame.draw.line(canvas, WHITE, [WIDTH // 2 + 50, HEIGHT // 2 - 30], [WIDTH // 2 + 50, HEIGHT // 2], 1) #left line start
+    pygame.draw.line(canvas, WHITE, [WIDTH // 2 - 50, HEIGHT // 2], [WIDTH // 2 + 50, HEIGHT // 2], 1) #botton line start
+
+
+
+    myfont = pygame.font.SysFont("Comic Sans MS", 20)
+    label_start = myfont.render("Start = SPACE", 1, (255,255,0))
+    canvas.blit(label_start, (255, 180))
+
+    label_max = myfont.render("MAX "+str(max_score), 1, (255,255,0))
+    canvas.blit(label_max, (280,220))
+
+    label_help = myfont.render("Press LEFT for less and RIGHT for more", 1, (255,255,0))
+    canvas.blit(label_help, (180, 240))
+
+
+    
+    pygame.display.update()
+    fps.tick(60)
+
+
 #draw function of canvas
 def draw(canvas):
     global paddle1_pos, paddle2_pos, ball_pos, ball_vel, l_score, r_score
@@ -77,24 +107,25 @@ def draw(canvas):
     pygame.draw.line(canvas, WHITE, [WIDTH - PAD_WIDTH, 0],[WIDTH - PAD_WIDTH, HEIGHT], 1)
     pygame.draw.circle(canvas, WHITE, [WIDTH//2, HEIGHT//2], 70, 1)
 
-    # update paddle's vertical position, keep paddle on the screen
-    if paddle1_pos[1] > HALF_PAD_HEIGHT and paddle1_pos[1] < HEIGHT - HALF_PAD_HEIGHT:
-        paddle1_pos[1] += paddle1_vel
-    elif paddle1_pos[1] == HALF_PAD_HEIGHT and paddle1_vel > 0:
-        paddle1_pos[1] += paddle1_vel
-    elif paddle1_pos[1] == HEIGHT - HALF_PAD_HEIGHT and paddle1_vel < 0:
-        paddle1_pos[1] += paddle1_vel
-    
-    if paddle2_pos[1] > HALF_PAD_HEIGHT and paddle2_pos[1] < HEIGHT - HALF_PAD_HEIGHT:
-        paddle2_pos[1] += paddle2_vel
-    elif paddle2_pos[1] == HALF_PAD_HEIGHT and paddle2_vel > 0:
-        paddle2_pos[1] += paddle2_vel
-    elif paddle2_pos[1] == HEIGHT - HALF_PAD_HEIGHT and paddle2_vel < 0:
-        paddle2_pos[1] += paddle2_vel
+    if pause == False:
+        # update paddle's vertical position, keep paddle on the screen
+        if paddle1_pos[1] > HALF_PAD_HEIGHT and paddle1_pos[1] < HEIGHT - HALF_PAD_HEIGHT:
+            paddle1_pos[1] += paddle1_vel
+        elif paddle1_pos[1] == HALF_PAD_HEIGHT and paddle1_vel > 0:
+            paddle1_pos[1] += paddle1_vel
+        elif paddle1_pos[1] == HEIGHT - HALF_PAD_HEIGHT and paddle1_vel < 0:
+            paddle1_pos[1] += paddle1_vel
 
-    #update ball
-    ball_pos[0] += int(ball_vel[0])
-    ball_pos[1] += int(ball_vel[1])
+        if paddle2_pos[1] > HALF_PAD_HEIGHT and paddle2_pos[1] < HEIGHT - HALF_PAD_HEIGHT:
+            paddle2_pos[1] += paddle2_vel
+        elif paddle2_pos[1] == HALF_PAD_HEIGHT and paddle2_vel > 0:
+            paddle2_pos[1] += paddle2_vel
+        elif paddle2_pos[1] == HEIGHT - HALF_PAD_HEIGHT and paddle2_vel < 0:
+            paddle2_pos[1] += paddle2_vel
+
+        #update ball
+        ball_pos[0] += int(ball_vel[0])
+        ball_pos[1] += int(ball_vel[1])
 
     #draw paddles and ball
     pygame.draw.circle(canvas, RED, ball_pos, 20, 0)
@@ -131,12 +162,30 @@ def draw(canvas):
 
     myfont2 = pygame.font.SysFont("Comic Sans MS", 20)
     label2 = myfont2.render("Score "+str(r_score), 1, (255,255,0))
-    canvas.blit(label2, (470, 20))  
+    canvas.blit(label2, (470, 20))
+
+    # Display the pause text, when the game is paused.
+    if pause:
+        pause_font = pygame.font.SysFont("Comic Sans MS", 100)
+        pause_text = pause_font.render("PAUSE", 1, (255, 255, 0))
+
+        restart_font = pygame.font.SysFont("Comic Sans MS", 50)
+        restart_text = restart_font.render("Press 'R' to restart", 1, (255, 255, 0))
+        ## If someone needs additional information, the code bellow was taken from here:https://www.geeksforgeeks.org/python/python-display-text-to-pygame-window/
+        # create a rectangular object for the text surface object
+        pause_rect = pause_text.get_rect()
+        restart_rect = restart_text.get_rect()
+        # set the center of the rectangular object.
+        pause_rect.center = (WIDTH // 2, HEIGHT // 2 - 50)
+        restart_rect.center = (WIDTH // 2, HEIGHT // 2 + 50)
+
+        canvas.blit(pause_text,pause_rect)
+        canvas.blit(restart_text, restart_rect)
     
     
 #keydown handler
 def keydown(event):
-    global paddle1_vel, paddle2_vel
+    global paddle1_vel, paddle2_vel, pause, saved_ball_vel, ball_vel, state, max_score
     
     if event.key == K_UP:
         paddle2_vel = -8
@@ -148,11 +197,28 @@ def keydown(event):
         paddle1_vel = 8
     # The selected key is "esc" - To pause the game.
     elif event.key == K_ESCAPE:
-        ball_vel = [0, 0]
+        #If the game is already paused.
+        if pause:
+            pause = False
+            ball_vel = list(saved_ball_vel)
+        # If the game is unpaused.
+        else:
+            pause = True
+            saved_ball_vel = list(ball_vel)
+            ball_vel = [0, 0]
+            paddle1_vel = 0
+            paddle2_vel = 0
+    elif event.key == K_SPACE:
+        state = GAME
+    elif event.key == K_LEFT:
+        max_score -= 1
+    elif event.key == K_RIGHT:
+        max_score += 1
     # Use the "r" to restart the game
     elif event.key == K_r:
         init()
-
+        pause = False
+        
 #keyup handler
 def keyup(event):
     global paddle1_vel, paddle2_vel
@@ -164,11 +230,11 @@ def keyup(event):
  
 init()
 
+state = MENU    
 
 #game loop
 while True:
 
-    draw(window)
 
     for event in pygame.event.get():
 
@@ -182,6 +248,11 @@ while True:
         elif l_score == max_score or r_score == max_score:
             pygame.quit()
             sys.exit()
+
+    if state == MENU:
+        menu_draw(window)
+    elif state == GAME:
+        draw(window)
             
     pygame.display.update()
     fps.tick(60)
